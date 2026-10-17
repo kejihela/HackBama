@@ -3,7 +3,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import fs from "node:fs";
 import path from "node:path";
 import { SCHEMA_SQL } from "./schema";
-import { seed } from "./seed";
+import { seed, seedTrustHistory } from "./seed";
 
 // Database: libSQL. Locally it's the SQLite file data/market.db. In production set
 // TURSO_DATABASE_URL + TURSO_AUTH_TOKEN and the same code talks to a hosted Turso database,
@@ -35,6 +35,7 @@ function connect() {
     await migrate(client);
     const { rows } = await client.execute("SELECT COUNT(*) AS n FROM tenants");
     if (Number(rows[0][0]) === 0) await seed();
+    await seedTrustHistory();
   })();
   // If setup fails, let the next request retry instead of caching the failure forever.
   ready.catch(() => {

@@ -5,6 +5,7 @@ import { canAccessThread, messagesIn, threadParticipants, threadTitle } from "@/
 import { getCycle } from "@/lib/matching";
 import { getTenant } from "@/lib/tenant";
 import { Chat } from "@/components/Chat";
+import { trustFor } from "@/lib/trust";
 
 export default async function Thread({ params }: { params: Promise<{ campus: string; id: string }> }) {
   const { campus, id } = await params;
@@ -14,6 +15,9 @@ export default async function Thread({ params }: { params: Promise<{ campus: str
   if (!await canAccessThread(threadId, viewer.id)) notFound();
   const info = (await threadTitle(threadId))!;
   const cycle = info.cycle_id ? await getCycle(info.cycle_id) : null;
+  const participants = await threadParticipants(threadId);
+  const trust = await trustFor(participants.map((p) => p.id));
+  const people = participants.map((p) => ({ ...p, trust: trust.get(p.id) ?? null }));
   const spots = (await getTenant(viewer.tenant_id))!.meetup_spots;
 
   return (
@@ -30,7 +34,7 @@ export default async function Thread({ params }: { params: Promise<{ campus: str
           {cycle.legs.map((l) => `${l.giver_name.split(" ")[0]} → ${l.receiver_name.split(" ")[0]}: ${l.listing_title}`).join("  ·  ")}
         </p>
       )}
-      <Chat threadId={threadId} meId={viewer.id} initial={await messagesIn(threadId)} people={await threadParticipants(threadId)} />
+      <Chat threadId={threadId} meId={viewer.id} initial={await messagesIn(threadId)} people={people} campus={campus} />
       <p className="faint small">Suggested meetup spots: {spots.join(" · ")}</p>
     </main>
   );

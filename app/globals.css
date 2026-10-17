@@ -305,3 +305,19 @@ p { margin: 0; }
 .campus-logo { display: inline-grid; place-items: center; flex: none; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35), 0 1px 3px rgba(0, 0, 0, 0.25); overflow: hidden; }
 .campus-logo img { width: 72%; height: 72%; object-fit: contain; }
 .footer .disclaimer { display: block; margin-top: 4px; font-size: 11.5px; max-width: 620px; }
+
+/* ---------- Trust score ---------- */
+.trust { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 750; white-space: nowrap; border: 1px solid; vertical-align: middle; }
+.trust b { font-family: var(--font-display); font-weight: 900; padding-left: 5px; margin-left: 1px; border-left: 1px solid currentColor; }
+.trust-trusted { background: #e4f1ea; color: #185c3b; border-color: #a8d3b8; }
+.trust-reliable { background: #e8ecf5; color: #233c6e; border-color: #b4c2e0; }
+.trust-fair, .trust-new { background: var(--surface-2); color: var(--ink-2); border-color: var(--line); }
+.trust-caution { background: #fdf0f0; color: #8a1c1c; border-color: #e3a3a3; }
+.ring-trusted { stroke: #1f7a4d; } .ring-reliable { stroke: #2d4a85; } .ring-fair, .ring-new { stroke: #807b73; } .ring-caution { stroke: #b42323; }
+.profile { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; padding: 24px; }
+.profile-id { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.breakdown { width: 100%; border-collapse: collapse; font-size: 14px; }
+.breakdown td { padding: 7px 0; border-bottom: 1px solid var(--line); }
+.breakdown td:last-child { text-align: right; font-weight: 800; font-family: var(--font-display); white-space: nowrap; padding-left: 12px; }
+.breakdown .pos { color: var(--ok); } .breakdown .neg { color: #b42323; }
+.breakdown .total td { border-bottom: none; font-weight: 800; padding-top: 10px; color: var(--ink); }

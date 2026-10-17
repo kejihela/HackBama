@@ -171,4 +171,10 @@ CREATE TABLE IF NOT EXISTS safety_flags (
   created_at  INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS safety_flags_user ON safety_flags(user_id, created_at);
+
+-- One-time data steps already applied (e.g. demo history added after launch).
+CREATE TABLE IF NOT EXISTS meta (
+  key    TEXT PRIMARY KEY,
+  value  TEXT NOT NULL
+);
 `;

@@ -11,6 +11,8 @@ import { avatarColor, initials, money, timeAgo } from "@/lib/format";
 import { ListingTile } from "@/components/ListingTile";
 import { SafetyCaution } from "@/components/SafetyCaution";
 import photoCredits from "@/lib/photo-credits.json";
+import { trustOf } from "@/lib/trust";
+import { TrustBadge } from "@/components/TrustBadge";
 import { buyWithEscrowAction, contactSellerAction, setListingStatusAction } from "../../actions";
 
 type Props = {
@@ -31,6 +33,7 @@ export default async function ListingPage({ params, searchParams }: Props) {
   const sellerCampus = (await getTenant(l.tenant_id))!;
   const demand = l.course_code ? await courseDemand(l.course_code) : 0;
   const crossCampus = viewer && viewer.tenant_id !== l.tenant_id;
+  const sellerTrust = (await trustOf(l.seller_id))!;
   const credit = l.image ? (photoCredits as Record<string, { creator: string; license: string; page: string }>)[l.image] : undefined;
   const order = l.status === "pending" ? await activeOrderForListing(l.id) : null;
   const myOrder = order && viewer && (order.buyer_id === viewer.id || order.seller_id === viewer.id) ? order : null;
@@ -107,7 +110,9 @@ export default async function ListingPage({ params, searchParams }: Props) {
               <span className="avatar" style={{ background: avatarColor(l.seller_id), width: 24, height: 24, fontSize: 10 }}>
                 {initials(l.seller_name)}
               </span>
-              {l.seller_name} <span className="faint" style={{ fontWeight: 500 }}>· verified {sellerCampus.short_name} student</span>
+              <Link href={`/c/${campus}/u/${l.seller_id}`} style={{ textDecoration: "underline" }}>{l.seller_name}</Link>
+              <TrustBadge trust={sellerTrust} href={`/c/${campus}/u/${l.seller_id}`} />
+              <span className="faint" style={{ fontWeight: 500 }}>· verified {sellerCampus.short_name} student</span>
             </dd>
             <dt>Posted</dt>
             <dd>{timeAgo(l.created_at)}</dd>
@@ -143,6 +148,11 @@ export default async function ListingPage({ params, searchParams }: Props) {
                 <span className="mono" style={{ color: "var(--ok)" }}>CampusLoop Protect · escrow</span>
                 <span className="badge trade">Buyer protection</span>
               </div>
+              {sellerTrust.level === "caution" && (
+                <div className="verify verify-bad small">
+                  <b>This seller has a low trust score ({sellerTrust.score}).</b> Escrow still protects you: inspect the item carefully before releasing payment.
+                </div>
+              )}
               <ol className="steps">
                 <li><b>Pay now.</b> CampusLoop holds the money. The seller can see it&apos;s there but can&apos;t touch it.</li>
                 <li><b>Meet and inspect</b> at a safe campus spot. Make sure it matches the photos and works.</li>

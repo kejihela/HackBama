@@ -5,6 +5,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { browseListings, listingsForMyCourses, upcomingEvents, wantsFor } from "@/lib/queries";
 import { daysUntil, eventDate } from "@/lib/format";
 import { ListingCard } from "@/components/ListingCard";
+import { trustFor } from "@/lib/trust";
 
 type Props = {
   params: Promise<{ campus: string }>;
@@ -25,6 +26,8 @@ export default async function Browse({ params, searchParams }: Props) {
   const courseMatches = mine && !q && !category ? await listingsForMyCourses(viewer.id, viewer.tenant_id) : [];
   const hasWants = viewer ? (await wantsFor(viewer.id)).length > 0 : false;
   const event = (await upcomingEvents(campus)).find((e) => daysUntil(e.starts_at) <= 60);
+
+  const trust = await trustFor([...listings, ...courseMatches].map((l) => l.seller_id));
 
   const href = (o: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
@@ -129,7 +132,7 @@ export default async function Browse({ params, searchParams }: Props) {
             </div>
             <div className="grid">
               {courseMatches.map((l) => (
-                <ListingCard key={l.id} l={l} site={campus} />
+                <ListingCard key={l.id} l={l} site={campus} trust={trust.get(l.seller_id)} />
               ))}
             </div>
           </section>
@@ -145,7 +148,7 @@ export default async function Browse({ params, searchParams }: Props) {
           {listings.length ? (
             <div className="grid">
               {listings.map((l) => (
-                <ListingCard key={l.id} l={l} site={campus} showCampus={scope === "network"} />
+                <ListingCard key={l.id} l={l} site={campus} trust={trust.get(l.seller_id)} showCampus={scope === "network"} />
               ))}
             </div>
           ) : (

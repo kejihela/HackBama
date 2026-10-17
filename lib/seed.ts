@@ -210,3 +210,106 @@ export async function seed() {
     await insEvent.run("Iron Bowl: Alabama at Auburn", "auburn", "ua", Date.parse("2026-11-28T14:30:00-06:00"));
   });
 }
+
+// ---------- Demo deal history for trust scores (added after launch; runs once per database) ----------
+
+type Past = {
+  seller: string;
+  buyer: string;
+  title: string;
+  category: string;
+  price: number; // dollars
+  daysAgo: number;
+  replyMin: number; // how fast the seller answered the buyer
+  outcome: "released" | "cancelled" | "lost-dispute";
+  note?: string;
+};
+
+const HISTORY: Past[] = [
+  // Maya: quick, reliable seller → Trusted
+  { seller: "maya", buyer: "jordan", title: "Organic chemistry model kit", category: "lab", price: 25, daysAgo: 20, replyMin: 8, outcome: "released" },
+  { seller: "maya", buyer: "ana", title: "BSC 114 lab manual", category: "textbooks", price: 15, daysAgo: 14, replyMin: 15, outcome: "released" },
+  { seller: "maya", buyer: "ben", title: "Clip-on desk fan", category: "dorm", price: 12, daysAgo: 10, replyMin: 12, outcome: "released" },
+  { seller: "maya", buyer: "devon", title: "Mini whiteboard + markers", category: "dorm", price: 8, daysAgo: 6, replyMin: 5, outcome: "released" },
+  // Devon: solid but slower → Reliable
+  { seller: "devon", buyer: "maya", title: "Physics textbook (Giancoli, 7th ed)", category: "textbooks", price: 40, daysAgo: 25, replyMin: 120, outcome: "released" },
+  { seller: "devon", buyer: "jordan", title: "USB-C hub", category: "other", price: 15, daysAgo: 9, replyMin: 180, outcome: "released" },
+  // Ben: one sale, slow replies
+  { seller: "ben", buyer: "ana", title: "Shower caddy + towels", category: "dorm", price: 10, daysAgo: 12, replyMin: 600, outcome: "released" },
+  // Cara (Auburn): fast replier
+  { seller: "cara", buyer: "will", title: "SPAN 1010 workbook", category: "textbooks", price: 12, daysAgo: 15, replyMin: 10, outcome: "released" },
+  { seller: "cara", buyer: "sofia", title: "Desk lamp with USB port", category: "dorm", price: 10, daysAgo: 8, replyMin: 20, outcome: "released" },
+  // Will (Auburn): one sale, one cancellation
+  { seller: "will", buyer: "sofia", title: "Microwave, 0.7 cu ft", category: "dorm", price: 30, daysAgo: 18, replyMin: 90, outcome: "released" },
+  { seller: "will", buyer: "cara", title: "Futon cover", category: "dorm", price: 20, daysAgo: 11, replyMin: 40, outcome: "cancelled" },
+  // Sofia (Auburn): sold counterfeit earbuds and lost the dispute → Caution
+  { seller: "sofia", buyer: "cara", title: "AirPods Pro (like new)", category: "other", price: 60, daysAgo: 16, replyMin: 30, outcome: "lost-dispute",
+    note: "These are counterfeit. The serial number doesn't exist on Apple's site and the case feels fake." },
+];
+
+export async function seedTrustHistory() {
+  const db = getDb();
+  await seedTransaction(async () => {
+    if (await db.prepare("SELECT 1 FROM meta WHERE key = 'trust_history_v1'").get()) return;
+    const users = new Map(
+      ((await db.prepare("SELECT id, tenant_id, email FROM users").all()) as { id: number; tenant_id: string; email: string }[]).map((u) => [
+        u.email.split("@")[0],
+        u,
+      ]),
+    );
+    // Only for the demo campuses; a database without the demo students just records that it ran.
+    if (HISTORY.every((h) => users.has(h.seller) && users.has(h.buyer))) {
+      const t0 = Date.now();
+      for (const h of HISTORY) {
+        const seller = users.get(h.seller)!;
+        const buyer = users.get(h.buyer)!;
+        const at = t0 - h.daysAgo * DAY;
+        const cents = h.price * 100;
+        const listingId = (
+          await db
+            .prepare(
+              `INSERT INTO listings (tenant_id, seller_id, category, mode, title, description, price_cents, visibility, status,
+                                     price_check, created_at)
+               VALUES (?, ?, ?, 'sell', ?, '', ?, 'campus', 'sold', 'fair', ?)`,
+            )
+            .run(seller.tenant_id, seller.id, h.category, h.title, cents, at - 2 * DAY)
+        ).lastInsertRowid;
+        // The conversation, with the seller's real reply delay.
+        const thread = (await db.prepare("INSERT INTO threads (listing_id, buyer_id, created_at) VALUES (?, ?, ?)").run(listingId, buyer.id, at - DAY)).lastInsertRowid;
+        const msg = db.prepare("INSERT INTO messages (thread_id, sender_id, body, created_at) VALUES (?, ?, ?, ?)");
+        await msg.run(thread, buyer.id, `Hi! Is the ${h.title.toLowerCase()} still available?`, at - DAY);
+        await msg.run(thread, seller.id, "Yes! When works for you to meet?", at - DAY + h.replyMin * 60_000);
+
+        const status = h.outcome === "released" ? "released" : "refunded";
+        const orderId = (
+          await db
+            .prepare(
+              `INSERT INTO orders (listing_id, buyer_id, seller_id, amount_cents, fee_cents, status, dispute_reason, resolution_note,
+                                   auto_release_at, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            )
+            .run(listingId, buyer.id, seller.id, cents, Math.max(50, Math.round(cents * 0.03)), status,
+              h.outcome === "lost-dispute" ? h.note! : null,
+              h.outcome === "lost-dispute" ? "Moderator confirmed the item was counterfeit. Buyer refunded in full." : null,
+              at + 7 * DAY, at, at + DAY)
+        ).lastInsertRowid;
+        const ev = db.prepare("INSERT INTO order_events (order_id, actor, action, note, created_at) VALUES (?, ?, ?, ?, ?)");
+        await ev.run(orderId, "buyer", "Paid into escrow", null, at);
+        if (h.outcome === "released") await ev.run(orderId, "buyer", "Item accepted, payment released", null, at + DAY);
+        if (h.outcome === "cancelled") await ev.run(orderId, "seller", "Sale cancelled, buyer refunded", null, at + DAY);
+        if (h.outcome === "lost-dispute") {
+          await ev.run(orderId, "buyer", "Dispute opened", h.note!, at + DAY / 2);
+          await ev.run(orderId, "moderator", "Moderator refunded buyer", "Item was counterfeit.", at + DAY);
+        }
+      }
+      // Sofia also tried to take a buyer off-platform recently.
+      await db
+        .prepare(
+          `INSERT INTO safety_flags (user_id, context, category, reason, excerpt, action, source, created_at)
+           VALUES (?, 'message', 'scam', 'a payment method outside escrow', 'just send it on cash app and I''ll ship it', 'blocked', 'rules', ?)`,
+        )
+        .run(users.get("sofia")!.id, t0 - 5 * DAY);
+    }
+    await db.prepare("INSERT INTO meta (key, value) VALUES ('trust_history_v1', ?)").run(String(Date.now()));
+  });
+}

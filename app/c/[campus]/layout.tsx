@@ -78,7 +78,7 @@ export default async function CampusLayout({ children, params }: Props) {
             )}
             {viewer ? (
               <>
-                <span className="user-chip" title={`Signed in as ${viewer.email}`}>
+                <Link href={`${base}/u/${viewer.id}`} className="user-chip" title={`Signed in as ${viewer.email}. View your profile and trust score.`}>
                   <span className="avatar" style={{ background: avatarColor(viewer.id), width: 28, height: 28, fontSize: 11 }}>
                     {initials(viewer.name)}
                   </span>
@@ -86,7 +86,7 @@ export default async function CampusLayout({ children, params }: Props) {
                     {viewer.name}
                     <small>{viewer.tenant_short_name}</small>
                   </span>
-                </span>
+                </Link>
                 <Link href={`${base}/sell`} className="btn btn-sm btn-on-brand">
                   + List
                 </Link>

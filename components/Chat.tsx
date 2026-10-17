@@ -3,14 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { SafetyCaution, type CautionProps } from "./SafetyCaution";
 import { avatarColor, initials } from "@/lib/format";
+import { TrustBadge } from "./TrustBadge";
+import type { TrustResult } from "@/lib/trust-score";
 
 type Msg = { id: number; sender_id: number; sender_name: string; body: string; created_at: number };
-type Person = { id: number; name: string; email: string; campus: string; role: string };
+type Person = { id: number; name: string; email: string; campus: string; role: string; trust: TrustResult | null };
 
 const clock = (ts: number) => new Date(ts).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
 /** Live thread: polls every 2.5s. Swap for websockets/Supabase Realtime at scale. */
-export function Chat({ threadId, meId, initial, people }: { threadId: number; meId: number; initial: Msg[]; people: Person[] }) {
+export function Chat({ threadId, meId, initial, people, campus }: { threadId: number; meId: number; initial: Msg[]; people: Person[]; campus: string }) {
   const me = people.find((p) => p.id === meId);
   const others = people.filter((p) => p.id !== meId);
   const roleOf = (id: number) => people.find((p) => p.id === id)?.role;
@@ -81,7 +83,8 @@ export function Chat({ threadId, meId, initial, people }: { threadId: number; me
           {others.map((p, i) => (
             <span key={p.id}>
               {i > 0 && ", "}
-              <b title={`${p.email} · ${p.campus}`}>{p.name}</b> <span className="faint">({p.role.toLowerCase()}, {p.campus})</span>
+              <b title={`${p.email} · ${p.campus}`}>{p.name}</b> <span className="faint">({p.role.toLowerCase()}, {p.campus})</span>{" "}
+              {p.trust && <TrustBadge trust={p.trust} href={`/c/${campus}/u/${p.id}`} compact />}
             </span>
           ))}
         </span>
