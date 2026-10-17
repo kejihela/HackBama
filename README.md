@@ -16,7 +16,8 @@ The verified-student marketplace where nobody needs cash.
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
 ![Turso](https://img.shields.io/badge/Turso_(libSQL)-4FF8D2?logo=turso&logoColor=black)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
-![OpenAI](https://img.shields.io/badge/OpenAI_moderation-412991?logo=openai&logoColor=white)
+![gpt-oss](https://img.shields.io/badge/AI-OpenAI_gpt--oss_(open--weight)-412991?logo=openai&logoColor=white)
+![Groq](https://img.shields.io/badge/Groq-F55036?logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-28_passing-1F7A4D)
 ![License](https://img.shields.io/badge/license-MIT-807B73)
 
@@ -54,10 +55,10 @@ Students list what they have and say what they want. CampusLoop builds a graph o
 ### 🛡️ AI safety screen
 Every chat message and listing is checked **on the server, before anyone sees it**:
 - **Rules first:** phone numbers, emails, card numbers and obfuscated spellings (`n u d e s`, `s3xy`) are caught instantly.
-- **Then an LLM** (OpenAI `gpt-5.4-mini`, or Claude) judges meaning. It catches *“box of 9mm rounds”* or *“be careful walking home alone tonight”*, and lets through harmless messages a keyword filter would block.
+- **Then an open-weight LLM**, OpenAI’s **gpt-oss-120b** served by Groq, judges meaning. It catches *“box of 9mm rounds”* or *“be careful walking home alone tonight”*, and lets through harmless messages a keyword filter would block.
 - **Categories:** sexual content, harassment, personal info, off-platform payment scams, prohibited items, offensive content.
 - **Blocked messages are never delivered.** The sender sees a caution, and 5 blocks in 24 hours pauses messaging.
-- **Precision:** only high-confidence calls block. Unsure ones are delivered and queued for a moderator. If the model is slow or down, the rules decide.
+- **Precision:** only high-confidence calls block. Unsure ones are delivered and queued for a moderator. If gpt-oss-120b is rate-limited it falls back to gpt-oss-20b, and if the AI is slow or down, the rules decide.
 
 ### 💰 Escrow: CampusLoop as the middleman
 Like Upwork for campus deals:
@@ -110,7 +111,7 @@ flowchart LR
 
     APP --> DB[("Turso<br/>libSQL")]
     APP --> BLOB[("Vercel Blob<br/>photos")]
-    SAFE --> AI["OpenAI<br/>gpt-5.4-mini"]
+    SAFE --> AI["gpt-oss-120b<br/>(open-weight) on Groq"]
     MOD["🛡️ Moderators<br/>/admin"] --> APP
 ```
 
@@ -127,7 +128,7 @@ flowchart LR
 | App | Next.js 15 (App Router, server actions), React 19, TypeScript |
 | Database | Turso (hosted libSQL / SQLite); a local file in development |
 | Files | Vercel Blob for listing photos |
-| AI moderation | OpenAI `gpt-5.4-mini` with strict JSON output (Claude supported) |
+| AI moderation | OpenAI’s open-weight **gpt-oss-120b** (falls back to gpt-oss-20b) on Groq, with strict JSON output; OpenAI API and Claude also supported |
 | Hosting | Vercel; every push to `master` deploys |
 | Tests | `node:test`, 28 tests |
 
@@ -148,7 +149,7 @@ The local database (`data/market.db`) is created and seeded with three campuses 
 
 | Variable | What it turns on |
 |---|---|
-| `OPENAI_API_KEY` | The LLM safety screen (otherwise keyword rules only) |
+| `GROQ_API_KEY` | The gpt-oss AI safety screen (otherwise keyword rules only). `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` also work |
 | `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` | A hosted database instead of the local file |
 | `BLOB_READ_WRITE_TOKEN` | Photo uploads to Vercel Blob instead of local disk |
 | `RESEND_API_KEY` | Real sign-in emails (otherwise demo mode shows the code on screen) |
@@ -175,7 +176,7 @@ They cover the trade-loop finder, the safety screen (including obfuscation and f
 
 ## ☁️ Deploying
 
-Production runs on **Vercel**, with **Turso** for the database and **Vercel Blob** for photos, both added from the Vercel Marketplace. Set `OPENAI_API_KEY`, `MODERATION_PROVIDER=openai` and a long random `ADMIN_KEY` in the project’s environment variables. The repo is connected to Vercel, so pushing to `master` deploys. The first request creates the tables and seeds demo data.
+Production runs on **Vercel**, with **Turso** for the database and **Vercel Blob** for photos, both added from the Vercel Marketplace. Set `GROQ_API_KEY`, `MODERATION_PROVIDER=groq` and a long random `ADMIN_KEY` in the project’s environment variables. The repo is connected to Vercel, so pushing to `master` deploys. The first request creates the tables and seeds demo data.
 
 ## 📁 Project structure
 
@@ -189,7 +190,7 @@ app/
 lib/
   cycles.ts                trade-loop engine (pure, tested)
   safety.ts                rule-based safety screen (pure, tested)
-  ai-moderation.ts         LLM layer: OpenAI or Claude, falls back to rules
+  ai-moderation.ts         LLM layer: gpt-oss on Groq (or OpenAI / Claude), falls back to rules
   verification.ts          prohibited items + price check (pure, tested)
   trust-score.ts           trust formula (pure, tested); trust.ts loads the data
   escrow.ts                hold, release, dispute, refund, auto-release

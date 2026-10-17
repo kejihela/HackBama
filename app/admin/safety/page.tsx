@@ -1,6 +1,6 @@
 import { recentFlags } from "@/lib/moderation";
 import { MODERATION_INFO, type ModerationCategory } from "@/lib/safety";
-import { aiModerationEnabled, moderationModel, moderationProvider } from "@/lib/ai-moderation";
+import { aiModerationEnabled, groqModels, moderationModel, moderationProvider } from "@/lib/ai-moderation";
 import { timeAgo } from "@/lib/format";
 
 export default async function SafetyLog() {
@@ -21,7 +21,7 @@ export default async function SafetyLog() {
       </div>
       <div className={`alert ${aiModerationEnabled() ? "success" : "info"}`}>
         {aiModerationEnabled() ? (
-          <><b>AI screen on</b> ({moderationProvider() === "openai" ? "OpenAI" : "Claude"} · {moderationModel()}). Rules run first; the model judges meaning, clears keyword false positives and catches what rules miss. Only high-confidence calls block; unsure ones are delivered and listed under “Needs a look”.</>
+          <><b>AI screen on</b> ({moderationProvider() === "groq" ? `gpt-oss on Groq · ${groqModels().map((m) => m.replace("openai/", "")).join(" → ")}` : `${moderationProvider() === "openai" ? "OpenAI" : "Claude"} · ${moderationModel()}`}). Rules run first; the model judges meaning, clears keyword false positives and catches what rules miss. Only high-confidence calls block; unsure ones are delivered and listed under “Needs a look”.</>
         ) : (
           <><b>AI screen off.</b> Using keyword rules only. Set <code>OPENAI_API_KEY</code> or <code>ANTHROPIC_API_KEY</code> and restart to turn on the AI classifier.</>
         )}
