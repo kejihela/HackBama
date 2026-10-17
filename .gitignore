@@ -4,3 +4,11 @@ data/
 next-env.d.ts
 *.tsbuildinfo
 .env*.local
+.vercel
+.env*
+!.env.example
+
+# Agent tooling installed by the Vercel/Turso CLIs
+.agents/
+.claude/
+skills-lock.json

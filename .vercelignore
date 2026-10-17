@@ -4,3 +4,6 @@ data/
 .next/
 node_modules/
 image.png
+.agents/
+.claude/
+skills-lock.json

@@ -67,20 +67,26 @@ async function migrate(client: Client) {
   if (!flags.has("source")) await client.execute("ALTER TABLE safety_flags ADD COLUMN source TEXT NOT NULL DEFAULT 'rules'");
 }
 
-function toArgs(args: Args): InArgs {
+function toArgs(sql: string, args: Args): InArgs {
   if (args.length === 1 && args[0] !== null && typeof args[0] === "object" && !(args[0] instanceof Uint8Array) && !(args[0] instanceof Date)) {
-    // Named parameters: drop undefined (libSQL rejects it), matching better-sqlite3's object form.
-    return Object.fromEntries(Object.entries(args[0] as Record<string, InValue | undefined>).map(([k, v]) => [k, v ?? null]));
+    // Named parameters. Hosted Turso rejects keys the SQL doesn't reference (a local file ignores them),
+    // so pass only the ones that appear as @name, and turn undefined into null.
+    const used = new Set([...sql.matchAll(/[@:$]([A-Za-z_][A-Za-z0-9_]*)/g)].map((m) => m[1]));
+    return Object.fromEntries(
+      Object.entries(args[0] as Record<string, InValue | undefined>)
+        .filter(([k]) => used.has(k))
+        .map(([k, v]) => [k, v ?? null]),
+    );
   }
   return args as InValue[];
 }
 
 async function execute(sql: string, args: Args) {
   const tx = txStore.getStore();
-  if (tx) return tx.execute({ sql, args: toArgs(args) });
+  if (tx) return tx.execute({ sql, args: toArgs(sql, args) });
   const s = state();
   await s.ready;
-  return s.client.execute({ sql, args: toArgs(args) });
+  return s.client.execute({ sql, args: toArgs(sql, args) });
 }
 
 class Statement {
