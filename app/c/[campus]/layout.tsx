@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getTenant, listTenants } from "@/lib/tenant";
+import { getTenant } from "@/lib/tenant";
 import { avatarColor, initials, onColor } from "@/lib/format";
 import { getViewer } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NavLinks } from "@/components/NavLinks";
 import { CampusLogo } from "@/components/CampusLogo";
-import { CampusSwitcher } from "@/components/CampusSwitcher";
+import { BrandHomeButton } from "@/components/BrandHomeButton";
 import { signOutAction } from "./actions";
 
 type Props = { children: React.ReactNode; params: Promise<{ campus: string }> };
@@ -22,7 +22,6 @@ export default async function CampusLayout({ children, params }: Props) {
   const tenant = await getTenant(campus);
   if (!tenant) notFound();
   const viewer = await getViewer();
-  const campuses = (await listTenants()).map(({ id, short_name, city, logo, primary_color }) => ({ id, short_name, city, logo, primary_color }));
 
   const pendingLoops = viewer
     ? (
@@ -57,13 +56,12 @@ export default async function CampusLayout({ children, params }: Props) {
     <div style={theme}>
       <header className="topbar" data-light={onBrand === "#111111" ? "" : undefined}>
         <div className="wrap">
+          <BrandHomeButton signedIn={!!viewer} name={viewer?.name} />
+          <span className="brand-divider" aria-hidden />
           <Link href={base} className="brandmark">
             <CampusLogo logo={tenant.logo} name={tenant.short_name} />
-            <span>
-              {tenant.short_name} <small>· CampusLoop</small>
-            </span>
+            <span>{tenant.short_name}</span>
           </Link>
-          <CampusSwitcher current={campus} campuses={campuses} />
           <NavLinks
             links={[
               { href: base, label: "Browse", exact: true },
@@ -102,7 +100,7 @@ export default async function CampusLayout({ children, params }: Props) {
               </>
             ) : (
               <Link href={`${base}/login`} className="btn btn-sm btn-on-brand">
-                Sign in with .edu
+                Sign in<span className="hide-sm">&nbsp;with .edu</span>
               </Link>
             )}
           </div>

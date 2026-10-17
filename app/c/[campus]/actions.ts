@@ -75,6 +75,12 @@ export async function signOutAction(f: FormData) {
   redirect(`/c/${campus}`);
 }
 
+/** From the CampusLoop logo: log out and go back to campus selection (the landing page). */
+export async function signOutToLandingAction() {
+  await signOut();
+  redirect("/");
+}
+
 // ---------- Listings ----------
 
 const IMAGE_TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };

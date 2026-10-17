@@ -322,18 +322,17 @@ p { margin: 0; }
 .breakdown .pos { color: var(--ok); } .breakdown .neg { color: #b42323; }
 .breakdown .total td { border-bottom: none; font-weight: 800; padding-top: 10px; color: var(--ink); }
 
-/* ---------- Campus switcher ---------- */
-.switcher { position: relative; flex: none; }
-.switcher summary { list-style: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.35); font-size: 13px; font-weight: 650; cursor: pointer; white-space: nowrap; user-select: none; }
-.switcher summary::-webkit-details-marker { display: none; }
-.switcher summary:hover, .switcher[open] summary { background: rgba(255, 255, 255, 0.14); }
-.topbar[data-light] .switcher summary { border-color: rgba(0, 0, 0, 0.2); }
-.switcher summary:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
-.switcher-menu { position: absolute; top: calc(100% + 8px); left: 0; z-index: 40; width: 280px; padding: 8px; display: flex; flex-direction: column; gap: 2px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 32px rgba(20, 18, 15, 0.18); }
-.switcher-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; font-size: 14px; }
-.switcher-item:hover { background: var(--bg); }
-.switcher-item.current { background: var(--bg); }
-.switcher-item .campus-logo { box-shadow: 0 0 0 1px var(--line); }
-.switcher-all { margin-top: 4px; border-top: 1px solid var(--line); border-radius: 0 0 10px 10px; padding-top: 12px; font-weight: 700; }
-.swatch-dot { width: 30px; height: 30px; border-radius: 50%; flex: none; }
-@media (max-width: 720px) { .switcher summary { padding: 6px 8px; } }
+/* ---------- CampusLoop home / logout logo ---------- */
+.brand-home { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 999px; border: none; background: transparent; color: inherit; font: inherit; cursor: pointer; flex: none; }
+.brand-home:hover { background: rgba(255, 255, 255, 0.14); }
+.topbar[data-light] .brand-home:hover { background: rgba(0, 0, 0, 0.08); }
+.brand-home:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.brand-word { font-family: var(--font-display); font-weight: 900; font-size: 15px; letter-spacing: -0.01em; }
+.brand-divider { width: 1px; height: 28px; background: currentColor; opacity: 0.3; flex: none; }
+.modal.confirm { padding: 24px; display: flex; flex-direction: column; gap: 8px; color: var(--ink); }
+.modal.confirm h3 { font-size: 20px; }
+@media (max-width: 560px) {
+  .topbar .wrap { gap: 8px; }
+  .brand-divider { display: none; }
+  .brand-home { padding: 2px; }
+}
