@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getTenant } from "@/lib/tenant";
+import { getTenant, listTenants } from "@/lib/tenant";
 import { avatarColor, initials, onColor } from "@/lib/format";
 import { getViewer } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NavLinks } from "@/components/NavLinks";
 import { CampusLogo } from "@/components/CampusLogo";
+import { CampusSwitcher } from "@/components/CampusSwitcher";
 import { signOutAction } from "./actions";
 
 type Props = { children: React.ReactNode; params: Promise<{ campus: string }> };
@@ -21,6 +22,7 @@ export default async function CampusLayout({ children, params }: Props) {
   const tenant = await getTenant(campus);
   if (!tenant) notFound();
   const viewer = await getViewer();
+  const campuses = (await listTenants()).map(({ id, short_name, city, logo, primary_color }) => ({ id, short_name, city, logo, primary_color }));
 
   const pendingLoops = viewer
     ? (
@@ -61,6 +63,7 @@ export default async function CampusLayout({ children, params }: Props) {
               {tenant.short_name} <small>· CampusLoop</small>
             </span>
           </Link>
+          <CampusSwitcher current={campus} campuses={campuses} />
           <NavLinks
             links={[
               { href: base, label: "Browse", exact: true },
