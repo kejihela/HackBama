@@ -1,0 +1,6 @@
+# Never upload local data or secrets; production uses Turso, Vercel Blob and Vercel env vars.
+data/
+.env*.local
+.next/
+node_modules/
+image.png

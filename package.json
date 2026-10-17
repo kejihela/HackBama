@@ -1,0 +1,28 @@
+{
+  "name": "swapcircle",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "add-campus": "node --env-file-if-exists=.env.local scripts/add-campus.mjs",
+    "reset-db": "rm -rf data/market.db data/market.db-* && echo 'Database removed; it will be re-seeded on next start.'",
+    "test": "node --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "@libsql/client": "^0.18.0",
+    "@vercel/blob": "^2.8.2",
+    "next": "^15.5.28",
+    "openai": "^7.36.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "typescript": "^5.9.3"
+  }
+}
