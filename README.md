@@ -17,7 +17,7 @@ The verified-student marketplace where nobody needs cash.
 ![Turso](https://img.shields.io/badge/Turso_(libSQL)-4FF8D2?logo=turso&logoColor=black)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
 ![gpt-oss](https://img.shields.io/badge/AI-OpenAI_gpt--oss_(open--weight)-412991?logo=openai&logoColor=white)
-![Groq](https://img.shields.io/badge/Groq-F55036?logoColor=white)
+![Groq](https://img.shields.io/badge/Powered_by-Groq-F55036)
 ![Tests](https://img.shields.io/badge/tests-28_passing-1F7A4D)
 ![License](https://img.shields.io/badge/license-MIT-807B73)
 
@@ -35,10 +35,14 @@ The verified-student marketplace where nobody needs cash.
 | **Track** | Track 1 (Styslinger College of Engineering) |
 | **Live demo** | **https://campusloop-gold.vercel.app** |
 | **GitHub** | https://github.com/kejihela/HackBama |
+| **AI model** | Open-source **gpt-oss-120b** by OpenAI (Apache 2.0), served by **Groq** |
 
 ## 📌 Short description
 
 CampusLoop is a SaaS multi-campus marketplace for verified college students to buy, sell and trade items like textbooks, dorm gear, tickets, tutoring and rides. Its core idea is the **trade loop**: the app finds swap chains like A → B → C → A, so students can trade without cash, even across schools. Every deal is protected by an **AI safety screen**, **escrow payments** and a transparent **trust score**.
+
+> [!TIP]
+> **🤖 Powered by open-source AI.** CampusLoop’s safety screen runs on **gpt-oss**, OpenAI’s open-weight model released under the Apache 2.0 license, served through **[Groq](https://groq.com)**’s fast inference API. We use **gpt-oss-120b**, falling back to **gpt-oss-20b** if it’s rate-limited. In our live tests it classified every test message correctly, at about **0.5 seconds per message**. It caught slang like *“addys”* (Adderall) and veiled threats, and let normal deal talk through.
 
 <div align="center">
   <img src="docs/screenshots/loops.png" alt="A 3-way trade loop between Ana (Alabama), Cara (Auburn) and Ben (Alabama)" width="900">
@@ -52,7 +56,7 @@ CampusLoop is a SaaS multi-campus marketplace for verified college students to b
 ### 🔄 Trade loops: the core idea
 Students list what they have and say what they want. CampusLoop builds a graph of *who could give what to whom* and finds cycles of 2–4 students, the same structure kidney-exchange programs use for donor chains. Every member accepts, the loop locks in, and a group chat opens. The matcher re-runs whenever anyone lists or wants something, across campuses.
 
-### 🛡️ AI safety screen
+### 🛡️ AI safety screen: open-source gpt-oss on Groq
 Every chat message and listing is checked **on the server, before anyone sees it**:
 - **Rules first:** phone numbers, emails, card numbers and obfuscated spellings (`n u d e s`, `s3xy`) are caught instantly.
 - **Then an open-weight LLM**, OpenAI’s **gpt-oss-120b** served by Groq, judges meaning. It catches *“box of 9mm rounds”* or *“be careful walking home alone tonight”*, and lets through harmless messages a keyword filter would block.
