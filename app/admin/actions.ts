@@ -37,6 +37,7 @@ export async function launchCampusAction(f: FormData) {
     primary_color: s(f, "primary_color"),
     accent_color: s(f, "accent_color"),
     meetup_spots: list(s(f, "meetup_spots")),
+    logo: s(f, "logo") || undefined,
   };
   const err = await validateTenant(input);
   if (err) redirect(`/admin/campuses?error=${encodeURIComponent(err)}`);

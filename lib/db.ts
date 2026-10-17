@@ -62,6 +62,12 @@ async function migrate(client: Client) {
   ]) {
     if (!listing.has(name)) await client.execute(`ALTER TABLE listings ADD COLUMN ${name} ${type}`);
   }
+  const tenants = await cols("tenants");
+  if (!tenants.has("logo")) {
+    await client.execute("ALTER TABLE tenants ADD COLUMN logo TEXT");
+    // Databases seeded before logos existed: give the demo campuses theirs.
+    await client.execute("UPDATE tenants SET logo = '/logos/' || id || '.svg' WHERE id IN ('ua','auburn','uga') AND logo IS NULL");
+  }
   const flags = await cols("safety_flags");
   if (!flags.has("action")) await client.execute("ALTER TABLE safety_flags ADD COLUMN action TEXT NOT NULL DEFAULT 'blocked'");
   if (!flags.has("source")) await client.execute("ALTER TABLE safety_flags ADD COLUMN source TEXT NOT NULL DEFAULT 'rules'");

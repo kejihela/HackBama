@@ -13,6 +13,7 @@ export type Tenant = {
   categories: string[];
   meetup_spots: string[];
   allow_network: boolean;
+  logo: string | null;
 };
 
 type TenantRow = Omit<Tenant, "email_domains" | "categories" | "meetup_spots" | "allow_network"> & {
@@ -62,6 +63,7 @@ export type NewTenantInput = {
   accent_color: string;
   meetup_spots?: string[];
   categories?: string[];
+  logo?: string;
 };
 
 export const SLUG_RE = /^[a-z][a-z0-9-]{1,30}$/;
@@ -77,6 +79,8 @@ export async function validateTenant(input: NewTenantInput): Promise<string | nu
   if (bad) return `"${bad}" is not a valid domain.`;
   if (!COLOR_RE.test(input.primary_color) || !COLOR_RE.test(input.accent_color))
     return "Colors must be hex values like #9E1B32.";
+  if (input.logo && !/^(https:\/\/[^\s"'<>]+|\/logos\/[a-z0-9-]+\.(svg|png))$/i.test(input.logo))
+    return "Logo must be an https:// image URL.";
   if (await getTenant(input.id)) return "A campus with that slug already exists.";
   const taken = (await listTenants()).find((t) => t.email_domains.some((d) => input.email_domains.includes(d)));
   if (taken) return `That email domain already belongs to ${taken.short_name}.`;
@@ -87,8 +91,8 @@ export async function createTenant(input: NewTenantInput): Promise<Tenant> {
   await db()
     .prepare(
       `INSERT INTO tenants (id, name, short_name, mascot, city, email_domains, primary_color, accent_color,
-                            categories, meetup_spots, allow_network, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+                            categories, meetup_spots, allow_network, logo, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
     )
     .run(
       input.id,
@@ -101,6 +105,7 @@ export async function createTenant(input: NewTenantInput): Promise<Tenant> {
       input.accent_color,
       JSON.stringify(input.categories?.length ? input.categories : ALL_CATEGORY_KEYS),
       JSON.stringify(input.meetup_spots?.length ? input.meetup_spots : ["Student union, main entrance"]),
+      input.logo || null,
       now(),
     );
   return (await getTenant(input.id))!;

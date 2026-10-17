@@ -6,6 +6,7 @@ import { avatarColor, initials, onColor } from "@/lib/format";
 import { getViewer } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NavLinks } from "@/components/NavLinks";
+import { CampusLogo } from "@/components/CampusLogo";
 import { signOutAction } from "./actions";
 
 type Props = { children: React.ReactNode; params: Promise<{ campus: string }> };
@@ -55,7 +56,7 @@ export default async function CampusLayout({ children, params }: Props) {
       <header className="topbar" data-light={onBrand === "#111111" ? "" : undefined}>
         <div className="wrap">
           <Link href={base} className="brandmark">
-            <span className="dot" />
+            <CampusLogo logo={tenant.logo} name={tenant.short_name} />
             <span>
               {tenant.short_name} <small>· CampusLoop</small>
             </span>
@@ -109,6 +110,12 @@ export default async function CampusLayout({ children, params }: Props) {
         <div className="wrap row between">
           <span>
             {tenant.name} · {tenant.city}
+            {tenant.logo && (
+              <span className="disclaimer">
+                CampusLoop is an independent student project, not affiliated with or endorsed by {tenant.name}. Logos are
+                trademarks of their respective universities.
+              </span>
+            )}
           </span>
           <span className="row">
             <Link href="/">All campuses</Link>·<Link href="/admin">Moderator console</Link>

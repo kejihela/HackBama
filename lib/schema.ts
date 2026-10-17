@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS tenants (
   categories      TEXT NOT NULL,              -- JSON array of enabled category keys
   meetup_spots    TEXT NOT NULL,              -- JSON array of safe exchange spots
   allow_network   INTEGER NOT NULL DEFAULT 1, -- participates in cross-campus browsing
+  logo            TEXT,                       -- /logos/<id>.svg or an https URL; null = generic mark
   created_at      INTEGER NOT NULL
 );
 

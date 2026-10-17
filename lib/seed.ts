@@ -15,6 +15,7 @@ const DAY = 24 * HOUR;
 const TENANTS = [
   {
     id: "ua",
+    logo: "/logos/ua.svg",
     name: "The University of Alabama",
     short_name: "Alabama",
     mascot: "Crimson Tide",
@@ -26,6 +27,7 @@ const TENANTS = [
   },
   {
     id: "auburn",
+    logo: "/logos/auburn.svg",
     name: "Auburn University",
     short_name: "Auburn",
     mascot: "Tigers",
@@ -37,6 +39,7 @@ const TENANTS = [
   },
   {
     id: "uga",
+    logo: "/logos/uga.svg",
     name: "University of Georgia",
     short_name: "Georgia",
     mascot: "Bulldogs",
@@ -130,12 +133,12 @@ export async function seed() {
 
     const insTenant = db.prepare(
       `INSERT INTO tenants (id, name, short_name, mascot, city, email_domains, primary_color, accent_color,
-                            categories, meetup_spots, allow_network, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+                            categories, meetup_spots, allow_network, logo, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
     );
     for (const [i, t] of TENANTS.entries()) {
       await insTenant.run(t.id, t.name, t.short_name, t.mascot, t.city, JSON.stringify(t.email_domains), t.primary_color,
-        t.accent_color, JSON.stringify(ALL_CATEGORY_KEYS), JSON.stringify(t.meetup_spots), t0 - (100 - i) * DAY);
+        t.accent_color, JSON.stringify(ALL_CATEGORY_KEYS), JSON.stringify(t.meetup_spots), t.logo, t0 - (100 - i) * DAY);
     }
 
     const userIds = new Map<string, { id: number; tenant: string }>();

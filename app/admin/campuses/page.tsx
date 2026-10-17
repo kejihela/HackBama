@@ -25,6 +25,7 @@ export default async function Campuses({ searchParams }: { searchParams: Promise
           <div className="field"><label>City</label><input name="city" className="input" placeholder="Atlanta, GA" /></div>
           <div className="field"><label>Primary color</label><input name="primary_color" type="color" className="swatch" defaultValue="#003057" /></div>
           <div className="field"><label>Accent color</label><input name="accent_color" type="color" className="swatch" defaultValue="#B3A369" /></div>
+          <div className="field full"><label>Logo URL (optional)</label><input name="logo" className="input" placeholder="https://…/logo.svg" /><span className="hint">An https link to the school&apos;s logo (SVG or PNG). Leave blank for the generic mark. Logos are trademarks; use one the school allows.</span></div>
           <div className="field full"><label>Safe meetup spots</label><textarea name="meetup_spots" className="textarea" style={{ minHeight: 70 }} placeholder={"Student Center, main entrance\nLibrary lobby"} /><span className="hint">One per line</span></div>
         </div>
         <button className="btn btn-ink btn-lg" style={{ alignSelf: "flex-start" }}>Launch campus</button>
