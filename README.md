@@ -1,93 +1,213 @@
-<<<<<<< HEAD
-# HackBama
-=======
-# CampusLoop
+<div align="center">
 
-A multi-campus student marketplace (HackBama Track 01). Its distinguishing feature is **trade loops**: the matcher finds swap chains across campuses, like A → B → C → A, so no one needs cash.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/brand/campusloop-logo-dark.svg">
+  <img src="public/brand/campusloop-logo.svg" alt="CampusLoop" width="440">
+</picture>
 
-## Run
+### Trade in circles. Every campus.
 
-```bash
-export PATH="$HOME/.local/node/bin:$PATH"   # Node 24 is installed here
-npm install
-npm run dev                                  # http://localhost:3000
+The verified-student marketplace where nobody needs cash.
+
+[![Live demo](https://img.shields.io/badge/Live_demo-campusloop--gold.vercel.app-9E1B32?style=for-the-badge&logo=vercel&logoColor=white)](https://campusloop-gold.vercel.app)
+[![GitHub](https://img.shields.io/badge/GitHub-kejihela%2FHackBama-151413?style=for-the-badge&logo=github&logoColor=white)](https://github.com/kejihela/HackBama)
+
+![Next.js](https://img.shields.io/badge/Next.js_15-000000?logo=nextdotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Turso](https://img.shields.io/badge/Turso_(libSQL)-4FF8D2?logo=turso&logoColor=black)
+![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
+![OpenAI](https://img.shields.io/badge/OpenAI_moderation-412991?logo=openai&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-28_passing-1F7A4D)
+![License](https://img.shields.io/badge/license-MIT-807B73)
+
+</div>
+
+---
+
+## 🏆 HackBama submission
+
+| | |
+|---|---|
+| **Project** | CampusLoop |
+| **Team** | BARK |
+| **Members** | Ridwan Bello · Adebayo Abdulganiyu Keji |
+| **Track** | Track 1 (Styslinger College of Engineering) |
+| **Live demo** | **https://campusloop-gold.vercel.app** |
+| **GitHub** | https://github.com/kejihela/HackBama |
+
+## 📌 Short description
+
+CampusLoop is a SaaS multi-campus marketplace for verified college students to buy, sell and trade items like textbooks, dorm gear, tickets, tutoring and rides. Its core idea is the **trade loop**: the app finds swap chains like A → B → C → A, so students can trade without cash, even across schools. Every deal is protected by an **AI safety screen**, **escrow payments** and a transparent **trust score**.
+
+<div align="center">
+  <img src="docs/screenshots/loops.png" alt="A 3-way trade loop between Ana (Alabama), Cara (Auburn) and Ben (Alabama)" width="900">
+  <br><sub>A real 3-way loop: Ana’s chem book goes to Cara at Auburn, Cara’s Iron Bowl ticket goes to Ben, and Ben’s mini fridge goes to Ana. $0 changes hands.</sub>
+</div>
+
+---
+
+## ✨ Features
+
+### 🔄 Trade loops: the core idea
+Students list what they have and say what they want. CampusLoop builds a graph of *who could give what to whom* and finds cycles of 2–4 students, the same structure kidney-exchange programs use for donor chains. Every member accepts, the loop locks in, and a group chat opens. The matcher re-runs whenever anyone lists or wants something, across campuses.
+
+### 🛡️ AI safety screen
+Every chat message and listing is checked **on the server, before anyone sees it**:
+- **Rules first:** phone numbers, emails, card numbers and obfuscated spellings (`n u d e s`, `s3xy`) are caught instantly.
+- **Then an LLM** (OpenAI `gpt-5.4-mini`, or Claude) judges meaning. It catches *“box of 9mm rounds”* or *“be careful walking home alone tonight”*, and lets through harmless messages a keyword filter would block.
+- **Categories:** sexual content, harassment, personal info, off-platform payment scams, prohibited items, offensive content.
+- **Blocked messages are never delivered.** The sender sees a caution, and 5 blocks in 24 hours pauses messaging.
+- **Precision:** only high-confidence calls block. Unsure ones are delivered and queued for a moderator. If the model is slow or down, the rules decide.
+
+### 💰 Escrow: CampusLoop as the middleman
+Like Upwork for campus deals:
+1. The buyer pays into escrow.
+2. They meet at a safe campus spot and inspect the item.
+3. They **release** the payment, or **open a dispute** that a moderator resolves.
+
+Payment auto-releases after 7 days, every step is in an audit trail, and a 3% buyer-protection fee applies. Payments are simulated in demo mode.
+
+### ✅ Listing verification
+Drugs, vapes, weapons, alcohol, fake IDs and test banks are rejected. Prices are checked against similar listings and typical used prices. Overpriced or *suspiciously cheap* items (a classic scam) go to a moderator. Sellers see a live **fair-price check** as they type.
+
+### ⭐ Trust score
+A 0–100 score built only from real behavior: completed deals, reply speed, disputes, cancellations and blocked messages. Every point is explained on the student’s profile.
+
+### 🏈 Game Day, cross-campus
+When Alabama plays at Auburn, Alabama students see Auburn students’ spare tickets, rides and couches for the weekend. Any listing can be shared with every campus.
+
+### 🏫 Multi-tenant SaaS
+One deployment serves every university. Each campus is a tenant with its own logo, colors, .edu domains, categories and safe meetup spots. **A new school launches from one admin form**, with no code and no redeploy.
+
+---
+
+## 📸 Screenshots
+
+| Campus selection | Browse (signed in) |
+|---|---|
+| <img src="docs/screenshots/landing.png" alt="Landing page with campus cards"> | <img src="docs/screenshots/browse.png" alt="Alabama browse page"> |
+| **Listing with escrow and a Trusted seller** | **Trust score breakdown** |
+| <img src="docs/screenshots/listing.png" alt="Listing page with fair-price badge, trusted seller and escrow box"> | <img src="docs/screenshots/profile.png" alt="Profile showing Caution 36 trust score with breakdown"> |
+| **Trade-loop chat with names, roles and trust** | **Moderator escrow console** |
+| <img src="docs/screenshots/chat.png" alt="Loop chat"> | <img src="docs/screenshots/admin.png" alt="Admin escrow dispute console"> |
+
+---
+
+## 🧭 How it works
+
+```mermaid
+flowchart LR
+    S["🎓 Students<br/>ua · auburn · uga"] -->|".edu sign-in"| APP
+
+    subgraph APP["Next.js 15 on Vercel"]
+        MW["Tenant routing<br/>(subdomain → campus)"]
+        LOOP["Trade-loop engine<br/>lib/cycles.ts"]
+        SAFE["Safety screen<br/>rules + LLM"]
+        ESC["Escrow<br/>lib/escrow.ts"]
+        VER["Listing verification"]
+        TRUST["Trust score"]
+    end
+
+    APP --> DB[("Turso<br/>libSQL")]
+    APP --> BLOB[("Vercel Blob<br/>photos")]
+    SAFE --> AI["OpenAI<br/>gpt-5.4-mini"]
+    MOD["🛡️ Moderators<br/>/admin"] --> APP
 ```
 
-The database (`data/market.db`) is created and seeded on first request. Run `npm run reset-db` to start over (stop the server first).
-Subdomains work locally as well: http://ua.localhost:3000.
+- **Tenant isolation:** every row carries `tenant_id`, and one visibility rule governs every listing read. Students see their own campus plus anything other schools shared with the network.
+- **Safety and money paths run on the server:** blocking, escrow transitions and checks like "is this item still available?" happen inside database transactions, so two buyers can never pay for the same item.
+- **Pure, tested engines:** the loop finder, safety rules, price verification and trust score are dependency-free modules with unit tests.
 
-## Demo script
+---
 
-1. Open `/c/ua`, choose **Sign in with .edu**, and pick **Ana Reyes**. Demo mode shows the code on screen and offers one-click accounts.
-2. Go to **Trade loops**. Add a want with the keywords "mini fridge" and the category Dorm gear. A 3-way cross-campus loop appears: Ana's chem book goes to Cara (Auburn), Cara's Iron Bowl ticket goes to Ben, and Ben's fridge goes to Ana.
-3. Accept the loop as Ana. Then sign in as Ben (UA) and Cara (`/c/auburn/login`) and accept as each of them. The loop locks in and its chat opens.
-4. **Game day** at `/c/ua/gameday` shows Auburn students' tickets, rides, and couches for the Iron Bowl.
-5. **Launch a campus** at `/admin` (key `hackbama`). Georgia Tech goes live right away with its own theme and .edu login.
-   The CLI does the same: `npm run add-campus -- gatech "Georgia Institute of Technology" "Georgia Tech" gatech.edu "#003057" "#B3A369"`
+## 🛠️ Tech stack
 
-## Trust & safety
+| Layer | Choice |
+|---|---|
+| App | Next.js 15 (App Router, server actions), React 19, TypeScript |
+| Database | Turso (hosted libSQL / SQLite); a local file in development |
+| Files | Vercel Blob for listing photos |
+| AI moderation | OpenAI `gpt-5.4-mini` with strict JSON output (Claude supported) |
+| Hosting | Vercel; every push to `master` deploys |
+| Tests | `node:test`, 28 tests |
 
-**Message safety screen** (`lib/safety.ts`). Every chat message is screened on the server before it's stored, so a modified client can't skip the check. Blocked messages are never delivered. The sender gets a caution for one of four categories:
-- sexual content
-- harassment or threats
-- personal information (phone numbers, emails, addresses, room numbers, card numbers, requests for login codes)
-- off-platform payment (Venmo, Zelle, gift cards, "skip escrow")
+---
 
-The screen also catches obfuscated spellings like `n u d e s` and `s3xy`. Each block is logged, and after 5 blocks in 24 hours messaging is paused.
-- Try it: sign in as Maya, open her chat with Ben, and send "just venmo me" or "text me at 205-555-0143".
+## 🚀 Run it locally
 
-**AI moderation layer** (`lib/ai-moderation.ts`). Set `OPENAI_API_KEY` (default model `gpt-5.4-mini`) or `ANTHROPIC_API_KEY` (`claude-opus-5-5`) in `.env.local` to turn on the LLM classifier; `MODERATION_PROVIDER` picks one when both are set. It reviews chat messages and new listings in six categories: sexual, harassment, privacy, scam, prohibited items (weapons, ammunition, drugs…) and offensive content (hate speech, extremism, gore), whether or not the content is about a deal.
-- **Order of checks.** The keyword rules run first. Certain matches, such as phone numbers, emails and card numbers, are blocked without a model call. Everything else goes to the model with the rule result as a hint, and its verdict is final.
-- **What that adds over the rules.** The model clears keyword false positives ("I felt like an idiot for forgetting the charger") and catches what keywords can't: slang for ammunition, veiled threats, innuendo.
-- **Precision.** Only a high-confidence "block" stops a message. Medium-confidence calls are delivered and queued under "Needs a look" in the safety log.
-- **Output and model.** Responses use strict JSON-schema structured output at low reasoning effort, and model refusals are treated as blocks.
-- **Failure handling.** One 4-second attempt. On timeout, rate limit or any error, the rules decide, so chat never depends on the model being up. Identical texts are cached.
+```bash
+git clone https://github.com/kejihela/HackBama.git
+cd HackBama
+npm install
+npm run dev            # http://localhost:3000
+```
 
-**CampusLoop Protect escrow** (`lib/escrow.ts`). The flow works like Upwork:
-1. The buyer pays into escrow. The listing comes off the market.
-2. Buyer and seller meet, and the buyer inspects the item.
-3. The buyer releases the payment, or opens a dispute that freezes it. A moderator then refunds the buyer or pays the seller.
+The local database (`data/market.db`) is created and seeded with three campuses on first request. Run `npm run reset-db` to start fresh (stop the server first).
 
-If the buyer never responds, the payment auto-releases after 7 days. Every step goes into an audit trail. Payments are simulated in demo mode; production would use Stripe Connect with held funds.
-- Try it: buy the TI-84 as Maya and release the payment. Then resolve the seeded mattress-topper dispute in the console.
+**Optional settings** (`.env.local`, see [`.env.example`](.env.example)):
 
-**Listing verification** (`lib/verification.ts`). Before a listing goes live:
-- Prohibited items are rejected: drugs, vapes, weapons, alcohol, fake IDs, test banks and counterfeits.
-- Unsafe or personal text is rejected.
-- The price is checked against similar CampusLoop listings, then a table of typical used prices, then a band for the category. Overpriced or suspiciously cheap items go to a moderator.
+| Variable | What it turns on |
+|---|---|
+| `OPENAI_API_KEY` | The LLM safety screen (otherwise keyword rules only) |
+| `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` | A hosted database instead of the local file |
+| `BLOB_READ_WRITE_TOKEN` | Photo uploads to Vercel Blob instead of local disk |
+| `RESEND_API_KEY` | Real sign-in emails (otherwise demo mode shows the code on screen) |
+| `ADMIN_KEY` | The moderator console key (default `hackbama`) |
 
-The sell form shows the price check live as the seller types. Approved listings carry a "✓ Fair price" badge.
+## 🎬 Demo walkthrough
 
-**Moderator console**: `/admin` (key `hackbama`) has four tabs: Escrow disputes, Listing review, Safety log and Campuses.
+In demo mode, the sign-in page has one-click buttons for sample students.
 
-## Architecture
+1. Open **Alabama** and sign in as **Ana Reyes**.
+2. **Trade loops:** add a want for *mini fridge* (Dorm gear). A 3-way loop with Ben (Alabama) and Cara (Auburn) appears.
+3. **Escrow:** open the TI-84 listing, pay into escrow, then release the payment from **Orders**.
+4. **Safety:** in any chat, send *“just venmo me”*. It’s blocked, with a caution explaining why.
+5. **Trust:** open Sofia’s profile at `/c/auburn/u/8` to see *Caution 36*, with every point explained.
+6. **Moderation:** `/admin` → resolve the mattress-topper dispute, review held listings, read the safety log, or launch a new campus.
 
-- **One deployment, many tenants.** Every row carries `tenant_id`. `middleware.ts` maps `ua.campusloop.app` to `/c/ua`, and adding a school only means inserting a row.
-- **Isolation.** One visibility rule (`lib/queries.ts`, `VISIBLE`) governs every listing read. Students see their own campus plus anything other schools shared to the network. On Postgres this becomes an RLS policy.
-- **Campus-verified.** Login uses a one-time code sent to an email whose domain matches `tenants.email_domains`. Set `RESEND_API_KEY` to send real email.
-- **Customization per school.** Colors, mascot, categories, and safe meetup spots live in the tenant row.
-- **Trade loops.** `lib/cycles.ts` is a pure module covered by unit tests (`npm test`). It enumerates cycles of length 2–4 Johnson-style, then picks a set of loops that share no person. It reruns whenever someone lists or wants something.
-- **Stack.** Next.js 15 (App Router, server actions) with SQLite through better-sqlite3. The schema in `lib/schema.sql` ports directly to Postgres.
+## 🧪 Tests
 
-## Deploying to Vercel
+```bash
+npm test
+```
 
-**Live:** https://campusloop-gold.vercel.app. The GitHub repo is connected to Vercel, so every push to `master` deploys to production, and pushes to other branches get preview URLs.
+They cover the trade-loop finder, the safety screen (including obfuscation and false positives), price verification and the trust score.
 
+## ☁️ Deploying
 
-Production needs three things the local setup gets from your disk:
+Production runs on **Vercel**, with **Turso** for the database and **Vercel Blob** for photos, both added from the Vercel Marketplace. Set `OPENAI_API_KEY`, `MODERATION_PROVIDER=openai` and a long random `ADMIN_KEY` in the project’s environment variables. The repo is connected to Vercel, so pushing to `master` deploys. The first request creates the tables and seeds demo data.
 
-| Need | Service | Environment variables |
-|---|---|---|
-| Database | Turso (hosted libSQL/SQLite) | `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` |
-| Photo uploads | Vercel Blob | `BLOB_READ_WRITE_TOKEN` |
-| AI moderation | OpenAI | `OPENAI_API_KEY`, `MODERATION_PROVIDER=openai`, `MODERATION_MODEL=gpt-5.4-mini` |
+## 📁 Project structure
 
-Also set `ADMIN_KEY` to a long random value (the demo key `hackbama` is public in this README).
+```
+app/
+  page.tsx                 campus selection (landing)
+  c/[campus]/              one marketplace per school: browse, listing, sell,
+                           loops, gameday, messages, orders, profiles (u/[id])
+  admin/                   moderator console: escrow, review, safety, campuses
+  api/                     chat polling, live price check, uploads
+lib/
+  cycles.ts                trade-loop engine (pure, tested)
+  safety.ts                rule-based safety screen (pure, tested)
+  ai-moderation.ts         LLM layer: OpenAI or Claude, falls back to rules
+  verification.ts          prohibited items + price check (pure, tested)
+  trust-score.ts           trust formula (pure, tested); trust.ts loads the data
+  escrow.ts                hold, release, dispute, refund, auto-release
+  db.ts / schema.ts        libSQL client, schema, migrations
+components/                UI pieces (chat, trust badge, logo, listing cards…)
+tests/                     node:test suites
+```
 
-1. `npx vercel login`, then `npx vercel link` in this folder.
-2. In the Vercel dashboard, open the project's **Storage** tab. Add **Turso** (Marketplace) and **Blob**, and connect both to the project. Their environment variables are added automatically.
-3. Add the OpenAI and admin variables with `npx vercel env add <NAME> production`.
-4. Push to `master` (or run `npx vercel deploy --prod`). The first request creates the tables and seeds the demo data.
+## 📜 Credits & license
 
-Without a database URL, the app falls back to the local file `data/market.db`.
->>>>>>> b4253a7 (First commit)
+- Code: [MIT License](LICENSE).
+- Listing demo photos: Flickr (via Openverse) and Wikimedia Commons under CC BY / BY-SA / CC0; see [`public/seed/CREDITS.md`](public/seed/CREDITS.md).
+- University logos are trademarks of their schools, used only to identify each campus; see [`public/logos/CREDITS.md`](public/logos/CREDITS.md). CampusLoop is an independent student project, not affiliated with or endorsed by any university.
+- The CampusLoop wordmark uses Archivo Black (SIL Open Font License), converted to outlines.
+
+<div align="center">
+<br>
+<img src="public/brand/campusloop-mark.svg" alt="" width="56">
+<br>
+<sub>Built for HackBama by Team BARK</sub>
+</div>

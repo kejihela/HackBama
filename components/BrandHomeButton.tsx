@@ -6,14 +6,8 @@ import { useFormStatus } from "react-dom";
 import { signOutToLandingAction } from "@/app/c/[campus]/actions";
 
 function LoopMark() {
-  return (
-    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden>
-      <circle cx="16" cy="16" r="15" fill="#F3EFE6" />
-      <circle cx="16" cy="16" r="8.5" fill="none" stroke="#151413" strokeWidth="3" strokeDasharray="40 14" strokeLinecap="round" transform="rotate(-40 16 16)" />
-      <path d="M21.6 6.6 24.4 10.8 19.4 11.4z" fill="#151413" />
-      <circle cx="16" cy="7.5" r="2.6" fill="#9E1B32" />
-    </svg>
-  );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/brand/campusloop-mark.svg" alt="" width={30} height={30} style={{ borderRadius: 8, boxShadow: "0 0 0 1.5px rgba(255,255,255,0.35)" }} />;
 }
 
 function YesButton() {
