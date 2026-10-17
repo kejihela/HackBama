@@ -203,7 +203,6 @@ tests/                     node:test suites
 - Code: [MIT License](LICENSE).
 - Listing demo photos: Flickr (via Openverse) and Wikimedia Commons under CC BY / BY-SA / CC0; see [`public/seed/CREDITS.md`](public/seed/CREDITS.md).
 - University logos are trademarks of their schools, used only to identify each campus; see [`public/logos/CREDITS.md`](public/logos/CREDITS.md). CampusLoop is an independent student project, not affiliated with or endorsed by any university.
-- The CampusLoop wordmark uses Archivo Black (SIL Open Font License), converted to outlines.
 
 <div align="center">
 <br>
