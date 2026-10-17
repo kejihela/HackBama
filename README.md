@@ -71,6 +71,9 @@ The sell form shows the price check live as the seller types. Approved listings 
 
 ## Deploying to Vercel
 
+**Live:** https://campusloop-gold.vercel.app. The GitHub repo is connected to Vercel, so every push to `master` deploys to production, and pushes to other branches get preview URLs.
+
+
 Production needs three things the local setup gets from your disk:
 
 | Need | Service | Environment variables |
@@ -84,7 +87,7 @@ Also set `ADMIN_KEY` to a long random value (the demo key `hackbama` is public i
 1. `npx vercel login`, then `npx vercel link` in this folder.
 2. In the Vercel dashboard, open the project's **Storage** tab. Add **Turso** (Marketplace) and **Blob**, and connect both to the project. Their environment variables are added automatically.
 3. Add the OpenAI and admin variables with `npx vercel env add <NAME> production`.
-4. Run `npx vercel deploy --prod`. The first request creates the tables and seeds the demo data.
+4. Push to `master` (or run `npx vercel deploy --prod`). The first request creates the tables and seeds the demo data.
 
 Without a database URL, the app falls back to the local file `data/market.db`.
 >>>>>>> b4253a7 (First commit)
