@@ -12,3 +12,6 @@ next-env.d.ts
 .agents/
 .claude/
 skills-lock.json
+
+# Local screenshots
+image copy*.png
