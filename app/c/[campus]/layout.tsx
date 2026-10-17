@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getTenant } from "@/lib/tenant";
-import { onColor } from "@/lib/format";
+import { avatarColor, initials, onColor } from "@/lib/format";
 import { getViewer } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NavLinks } from "@/components/NavLinks";
@@ -77,6 +77,15 @@ export default async function CampusLayout({ children, params }: Props) {
             )}
             {viewer ? (
               <>
+                <span className="user-chip" title={`Signed in as ${viewer.email}`}>
+                  <span className="avatar" style={{ background: avatarColor(viewer.id), width: 28, height: 28, fontSize: 11 }}>
+                    {initials(viewer.name)}
+                  </span>
+                  <span className="user-name hide-sm">
+                    {viewer.name}
+                    <small>{viewer.tenant_short_name}</small>
+                  </span>
+                </span>
                 <Link href={`${base}/sell`} className="btn btn-sm btn-on-brand">
                   + List
                 </Link>

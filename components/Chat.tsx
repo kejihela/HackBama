@@ -2,11 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { SafetyCaution, type CautionProps } from "./SafetyCaution";
+import { avatarColor, initials } from "@/lib/format";
 
 type Msg = { id: number; sender_id: number; sender_name: string; body: string; created_at: number };
+type Person = { id: number; name: string; email: string; campus: string; role: string };
+
+const clock = (ts: number) => new Date(ts).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
 /** Live thread: polls every 2.5s. Swap for websockets/Supabase Realtime at scale. */
-export function Chat({ threadId, meId, initial }: { threadId: number; meId: number; initial: Msg[] }) {
+export function Chat({ threadId, meId, initial, people }: { threadId: number; meId: number; initial: Msg[]; people: Person[] }) {
+  const me = people.find((p) => p.id === meId);
+  const others = people.filter((p) => p.id !== meId);
+  const roleOf = (id: number) => people.find((p) => p.id === id)?.role;
   const [msgs, setMsgs] = useState<Msg[]>(initial);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -64,14 +71,45 @@ export function Chat({ threadId, meId, initial }: { threadId: number; meId: numb
 
   return (
     <div className="panel chat" style={{ padding: 0, position: "relative" }}>
+      <div className="chat-head">
+        <span className="small">
+          Signed in as <b>{me?.name ?? "you"}</b>
+          {me && <span className="role-tag">{me.role}</span>}
+        </span>
+        <span className="small chat-with">
+          with{" "}
+          {others.map((p, i) => (
+            <span key={p.id}>
+              {i > 0 && ", "}
+              <b title={`${p.email} · ${p.campus}`}>{p.name}</b> <span className="faint">({p.role.toLowerCase()}, {p.campus})</span>
+            </span>
+          ))}
+        </span>
+      </div>
       <div className="chat-log" ref={logRef}>
         {msgs.length === 0 && <p className="faint small" style={{ textAlign: "center", marginTop: 40 }}>Say hi and pick a meetup spot.</p>}
-        {msgs.map((m) => (
-          <div key={m.id} className={`bubble ${m.sender_id === meId ? "mine" : ""}`}>
-            {m.sender_id !== meId && <div className="who">{m.sender_name}</div>}
-            {m.body}
-          </div>
-        ))}
+        {msgs.map((m, i) => {
+          const mine = m.sender_id === meId;
+          // Label each run of messages from the same person, not every bubble.
+          const first = i === 0 || msgs[i - 1].sender_id !== m.sender_id;
+          const role = roleOf(m.sender_id);
+          return (
+            <div key={m.id} className={`msg ${mine ? "mine" : ""}`}>
+              {first && (
+                <div className="msg-who">
+                  <span className="avatar" style={{ background: avatarColor(m.sender_id), width: 22, height: 22, fontSize: 9 }}>
+                    {initials(m.sender_name)}
+                  </span>
+                  <b>{mine ? `You (${m.sender_name})` : m.sender_name}</b>
+                  {role && <span className="role-tag">{role}</span>}
+                </div>
+              )}
+              <div className={`bubble ${mine ? "mine" : ""}`} title={clock(m.created_at)}>
+                {m.body}
+              </div>
+            </div>
+          );
+        })}
       </div>
       <form className="chat-form" onSubmit={send}>
         <input ref={inputRef} className="input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Message…" maxLength={2000} disabled={!!blocked?.suspended} />

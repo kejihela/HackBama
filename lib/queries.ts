@@ -237,6 +237,30 @@ export async function threadTitle(threadId: number): Promise<{ title: string; li
   );
 }
 
+export type Participant = { id: number; name: string; email: string; campus: string; role: "Buyer" | "Seller" | "Loop member" };
+
+/** Everyone in a conversation, with their role, so the chat can label who said what. */
+export async function threadParticipants(threadId: number): Promise<Participant[]> {
+  return (await db()
+    .prepare(
+      `SELECT u.id, u.name, u.email, t.short_name AS campus, 'Buyer' AS role
+         FROM threads th JOIN users u ON u.id = th.buyer_id JOIN tenants t ON t.id = u.tenant_id
+        WHERE th.id = @t AND th.listing_id IS NOT NULL
+       UNION ALL
+       SELECT u.id, u.name, u.email, t.short_name, 'Seller'
+         FROM threads th JOIN listings l ON l.id = th.listing_id JOIN users u ON u.id = l.seller_id
+         JOIN tenants t ON t.id = u.tenant_id
+        WHERE th.id = @t
+       UNION ALL
+       SELECT u.id, u.name, u.email, t.short_name, 'Loop member'
+         FROM threads th JOIN trade_legs tl ON tl.cycle_id = th.cycle_id JOIN users u ON u.id = tl.giver_id
+         JOIN tenants t ON t.id = u.tenant_id
+        WHERE th.id = @t
+        ORDER BY 5 DESC, 2`,
+    )
+    .all({ t: threadId })) as Participant[];
+}
+
 export async function openListingThread(listingId: number, buyerId: number): Promise<number> {
   const d = db();
   const existing = (await d.prepare("SELECT id FROM threads WHERE listing_id = ? AND buyer_id = ?").get(listingId, buyerId)) as

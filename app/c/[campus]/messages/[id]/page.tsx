@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getViewer } from "@/lib/auth";
-import { canAccessThread, messagesIn, threadTitle } from "@/lib/queries";
+import { canAccessThread, messagesIn, threadParticipants, threadTitle } from "@/lib/queries";
 import { getCycle } from "@/lib/matching";
 import { getTenant } from "@/lib/tenant";
 import { Chat } from "@/components/Chat";
@@ -30,7 +30,7 @@ export default async function Thread({ params }: { params: Promise<{ campus: str
           {cycle.legs.map((l) => `${l.giver_name.split(" ")[0]} → ${l.receiver_name.split(" ")[0]}: ${l.listing_title}`).join("  ·  ")}
         </p>
       )}
-      <Chat threadId={threadId} meId={viewer.id} initial={await messagesIn(threadId)} />
+      <Chat threadId={threadId} meId={viewer.id} initial={await messagesIn(threadId)} people={await threadParticipants(threadId)} />
       <p className="faint small">Suggested meetup spots: {spots.join(" · ")}</p>
     </main>
   );
