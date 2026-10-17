@@ -1,0 +1,142 @@
+CAMPUSLOOP DEMO SCRIPT (about 4 minutes, roughly 600 spoken words)
+==================================================================
+
+Lines in [brackets] are what to do on screen. Everything else is what you say.
+
+
+INTRO (0:00 - 0:20)
+-------------------
+[Landing page with the campus cards]
+
+"Hi, we're Team BARK, and this is CampusLoop: a marketplace only for verified
+college students, where you can buy, sell, or trade textbooks, dorm gear, game
+tickets and rides, often without any cash changing hands. I'll show you five
+things: how campuses join, how listings are verified, escrow, chat safety, and
+the feature we're proudest of, the trade loop."
+
+
+1. CREATING A CAMPUS: MULTI-TENANT, CROSS-CAMPUS, CAMPUS-VERIFIED (0:20 - 1:05)
+-------------------------------------------------------------------------------
+[Open /admin -> Campuses -> fill in the new-campus form]
+
+"CampusLoop is built as SaaS. One deployment serves every university, and each
+campus is its own tenant with its own logo, colors, categories and safe meetup
+spots. Launching a new school takes one form: no code, no redeploy."
+
+[Submit, then go back to the landing page and show the new campus card]
+
+"And it's live. Every campus is locked to its own .edu email domains, so only
+real students from that school can sign in. That's what we mean by
+campus-verified."
+
+[Use the campus switcher in the top bar / show a Game Day listing from Auburn]
+
+"Campuses aren't walled off, though. Any listing can be shared with the whole
+network. On Game Day, when Alabama plays at Auburn, Alabama students can see
+Auburn students' spare tickets, rides and couches. Under the hood every row has
+a tenant ID, and one visibility rule decides what each student sees."
+
+
+2. PRODUCT VERIFICATION (1:05 - 1:45)
+-------------------------------------
+[Start creating a listing. Type a price and watch the fair-price check update]
+
+"When a student lists an item, we check it before it goes live. While I type a
+price, the fair-price check compares it with similar listings and typical used
+prices. If an item is overpriced, or suspiciously cheap, which is a classic
+scam sign, it goes to a moderator."
+
+[Try listing a prohibited item, such as a vape or a test bank, and show the rejection]
+
+"Prohibited items like drugs, vapes, weapons, alcohol, fake IDs and test banks
+are rejected outright. Buyers only ever see listings that passed these checks."
+
+
+3. ESCROW (1:45 - 2:30)
+-----------------------
+[Open a listing with the escrow box and pay into escrow]
+
+"Paying a stranger up front is the biggest risk in student marketplaces, so
+CampusLoop sits in the middle, like Upwork. The buyer pays into escrow, and the
+seller can see the money is secured but can't touch it yet."
+
+[Show the safe meetup spot, then the Release / Open dispute buttons]
+
+"They meet at a safe campus spot and the buyer inspects the item. If it's good,
+they release the payment. If it isn't, they open a dispute."
+
+[Switch to /admin/escrow, the moderator console]
+
+"Disputes come here, where a moderator resolves them. Every step is in an audit
+trail. Payment auto-releases after seven days so sellers aren't left waiting,
+and there's a 3% buyer-protection fee. Escrow changes run inside database
+transactions, so two buyers can never pay for the same item."
+
+
+4. CHAT SECURITY (2:30 - 3:15)
+------------------------------
+[Open a chat and send a normal message, then try sending a phone number]
+
+"Every chat message is screened on the server before the other person sees it.
+Rules run first and catch phone numbers, emails, card numbers, and tricks like
+spelling words with spaces or numbers."
+
+[Send something subtle, like "be careful walking home alone tonight", and show the caution]
+
+"Then an open-weight AI model, OpenAI's gpt-oss-120b running on Groq, judges
+what the message means. That's how it catches a veiled threat like this one,
+and how it lets through harmless messages a keyword filter would wrongly block.
+A blocked message is never delivered, and five blocks in 24 hours pauses that
+student's messaging."
+
+[Briefly show /admin/safety and a profile's trust score]
+
+"Messages the AI isn't sure about are delivered but queued for a moderator. All
+of this feeds a trust score from 0 to 100, built only from real behavior, with
+every point explained on the student's profile."
+
+
+5. TRADE LOOP (3:15 - 4:10)
+---------------------------
+[Open the Loops page with the Ana -> Cara -> Ben loop]
+
+"Now the core idea. Most students don't need cash. They need to swap. But a
+direct swap only works if two people want each other's items, which rarely
+happens. CampusLoop looks further."
+
+"Students list what they have and what they want. We build a graph of who could
+give what to whom and look for cycles of two to four people. Kidney-exchange
+programs use the same structure to chain donors together."
+
+[Walk through the loop on screen]
+
+"Here's a real one. Ana at Alabama gives her chem book to Cara at Auburn. Cara
+gives her Iron Bowl ticket to Ben. Ben gives his mini fridge back to Ana. Three
+students, two campuses, everyone gets what they wanted, and zero dollars change
+hands."
+
+[Accept the loop and show the group chat that opens]
+
+"Once every member accepts, the loop locks in and a group chat opens, with the
+same safety screening and trust scores. The matcher runs again whenever anyone
+lists or wants something, so new loops keep appearing."
+
+
+CLOSE (4:10 - 4:30)
+-------------------
+[Back to the landing page, or the README logo]
+
+"That's CampusLoop: verified students, verified listings, protected payments,
+safe conversations, and trade loops that let students trade in circles across
+every campus. It's live now at campusloop-gold.vercel.app. Thanks for watching!"
+
+
+TIPS FOR RECORDING
+------------------
+- Do the risky steps, like the blocked messages, the prohibited listing and the
+  dispute, once before you record. Then you know they work on the live site,
+  and the AI screen isn't rate-limited at the moment you show it.
+- If you run long, cut the trust-score line in section 4 and the audit-trail
+  line in section 3 first.
+- The trade loop is your strongest moment, so slow down there, even if it costs
+  time somewhere else.

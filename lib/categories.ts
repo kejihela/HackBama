@@ -5,6 +5,7 @@ export type CategoryKey =
   | "tickets"
   | "tutoring"
   | "rides"
+  | "vehicles"
   | "housing"
   | "other";
 
@@ -15,6 +16,7 @@ export const CATEGORIES: { key: CategoryKey; label: string; hint: string }[] = [
   { key: "tickets", label: "Tickets", hint: "Games, concerts, formals" },
   { key: "tutoring", label: "Tutoring", hint: "Sessions by the hour" },
   { key: "rides", label: "Rides", hint: "Airport, home, away games" },
+  { key: "vehicles", label: "Vehicles", hint: "Cars, motorcycles, mopeds, bikes" },
   { key: "housing", label: "Game-day stays", hint: "Couches and guest rooms for visitors" },
   { key: "other", label: "Other", hint: "Anything else" },
 ];

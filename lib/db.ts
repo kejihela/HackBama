@@ -69,6 +69,18 @@ async function migrate(client: Client) {
     // Databases seeded before logos existed: give the demo campuses theirs.
     await client.execute("UPDATE tenants SET logo = '/logos/' || id || '.svg' WHERE id IN ('ua','auburn','uga') AND logo IS NULL");
   }
+  const done = await client.execute("SELECT 1 FROM meta WHERE key = 'category_vehicles_v1'");
+  if (!done.rows.length) {
+    const ts = await client.execute("SELECT id, categories FROM tenants");
+    for (const r of ts.rows) {
+      const cats = JSON.parse(String(r[1])) as string[];
+      if (!cats.includes("vehicles")) {
+        cats.splice(Math.max(0, cats.indexOf("rides") + 1), 0, "vehicles");
+        await client.execute({ sql: "UPDATE tenants SET categories = ? WHERE id = ?", args: [JSON.stringify(cats), String(r[0])] });
+      }
+    }
+    await client.execute({ sql: "INSERT OR IGNORE INTO meta (key, value) VALUES ('category_vehicles_v1', ?)", args: [String(Date.now())] });
+  }
   const flags = await cols("safety_flags");
   if (!flags.has("action")) await client.execute("ALTER TABLE safety_flags ADD COLUMN action TEXT NOT NULL DEFAULT 'blocked'");
   if (!flags.has("source")) await client.execute("ALTER TABLE safety_flags ADD COLUMN source TEXT NOT NULL DEFAULT 'rules'");

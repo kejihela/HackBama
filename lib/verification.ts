@@ -8,7 +8,8 @@
 // Out-of-range prices aren't rejected outright. They're held for a human moderator, because a
 // pristine item can legitimately cost more, and a suspiciously cheap one is a classic scam signal.
 
-export type PriceVerdict = "fair" | "high" | "low" | "free" | "unknown";
+// "unrealistic" = so far outside the range it can't be a real price (a $1 car): rejected outright.
+export type PriceVerdict = "fair" | "high" | "low" | "free" | "unrealistic" | "unknown";
 
 export type PriceCheck = {
   verdict: PriceVerdict;
@@ -33,11 +34,33 @@ const CATEGORY_BANDS: Record<string, [number, number, string]> = {
   tutoring: [8, 80, "tutoring, per hour"],
   rides: [3, 150, "shared rides"],
   housing: [15, 300, "game-day stays, per night"],
+  vehicles: [50, 60000, "used vehicles"],
   other: [1, 1500, "used items"],
 };
 
+// Goods categories: an item reference (say, "car") applies here even if the seller picked the
+// wrong one. Service categories (rides, tutoring, tickets, stays) are excluded, so "car ride to
+// the airport" is never priced like a car.
+const GOODS = ["vehicles", "other", "dorm", "lab", "textbooks"];
+const CAR_MAKES =
+  "toyota|honda|ford|chevy|chevrolet|nissan|hyundai|kia|subaru|mazda|jeep|bmw|mercedes|audi|volkswagen|vw|tesla|dodge|lexus|acura|gmc|buick|volvo|mitsubishi";
+
 // Typical used prices for items students sell all the time. Most specific patterns first.
-const REFERENCE: { re: RegExp; cats: string[]; range: [number, number]; label: string }[] = [
+// "USB car charger" or "Toyota floor mats" are accessories, not vehicles.
+const VEHICLE_ACCESSORY =
+  /\b(?:charger|charging|mount|holder|mats?|covers?|seat covers?|freshener|vacuum|wash|kit|toy|toys|model|hot wheels|lego|poster|keychain|sticker|decal|manual|cable|adapter|phone|dash ?cam|wipers?|bulbs?)\b/;
+
+const REFERENCE: { re: RegExp; cats: string[]; range: [number, number]; label: string; vehicle?: boolean }[] = [
+  { re: /\bgolf cart\b/, cats: GOODS, range: [1500, 10000], label: "used golf cart", vehicle: true },
+  { re: /\b(?:moped|vespa)\b/, cats: GOODS, range: [300, 3000], label: "used moped", vehicle: true },
+  { re: /\b(?:motorcycle|motorbike|dirt bike)\b/, cats: GOODS, range: [800, 15000], label: "used motorcycle", vehicle: true },
+  {
+    re: new RegExp(`\\b(?:car|cars|sedan|suv|truck|pickup|minivan|hatchback|coupe|convertible|${CAR_MAKES})\\b`),
+    cats: GOODS,
+    range: [1000, 40000],
+    label: "used car",
+    vehicle: true,
+  },
   { re: /\bswitch lite\b/, cats: ["other", "dorm"], range: [80, 170], label: "used Nintendo Switch Lite" },
   { re: /\b(?:nintendo )?switch\b/, cats: ["other", "dorm"], range: [120, 280], label: "used Nintendo Switch" },
   { re: /\bps5\b|playstation 5/, cats: ["other", "dorm"], range: [250, 480], label: "used PS5" },
@@ -60,8 +83,8 @@ const REFERENCE: { re: RegExp; cats: string[]; range: [number, number]; label: s
   { re: /lab coat|goggles/, cats: ["lab"], range: [5, 40], label: "used lab coat or goggles" },
   { re: /dissection kit/, cats: ["lab"], range: [8, 40], label: "dissection kit" },
   { re: /access code/, cats: ["textbooks"], range: [20, 150], label: "course access code" },
-  { re: /\bbike\b|bicycle/, cats: ["rides", "other"], range: [40, 400], label: "used bike" },
-  { re: /\bscooter\b/, cats: ["rides", "other"], range: [50, 500], label: "used scooter" },
+  { re: /\bbike\b|bicycle/, cats: ["vehicles", "other"], range: [40, 400], label: "used bike" },
+  { re: /\bscooter\b/, cats: ["vehicles", "other"], range: [50, 500], label: "used scooter" },
 ];
 
 // Things that can't be sold on campus, with the reason shown to the seller.
@@ -93,7 +116,7 @@ function median(nums: number[]): number {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-const money = (c: number) => `$${Math.round(c / 100)}`;
+const money = (c: number) => `$${Math.round(c / 100).toLocaleString("en-US")}`;
 
 /** Works out the reasonable price range for an item and where the asking price falls. */
 export function checkPrice(
@@ -107,7 +130,8 @@ export function checkPrice(
   const similar = comps.filter(
     (c) => c.category === item.category && c.price_cents > 0 && words(c.title).filter((w) => titleWords.has(w)).length >= 2,
   );
-  const ref = REFERENCE.find((r) => r.cats.includes(item.category) && r.re.test(t));
+  const accessory = VEHICLE_ACCESSORY.test(t);
+  const ref = REFERENCE.find((r) => r.cats.includes(item.category) && r.re.test(t) && !(r.vehicle && accessory));
 
   if (similar.length >= 3) {
     const m = median(similar.map((c) => c.price_cents));
@@ -124,7 +148,8 @@ export function checkPrice(
   }
 
   let verdict: PriceVerdict;
-  if (item.price_cents === 0) verdict = "free";
+  if (item.price_cents === 0) verdict = low >= $(200) ? "unrealistic" : "free"; // a "free car" is bait, not a gift
+  else if (item.price_cents < low * 0.1 || item.price_cents > high * 10) verdict = "unrealistic";
   else if (item.price_cents > high) verdict = "high";
   else if (item.price_cents < low * 0.5) verdict = "low"; // well below the floor: typo or bait listing
   else verdict = "fair";
@@ -138,6 +163,8 @@ export function priceMessage(p: PriceCheck): string {
       return `Fair price: within the ${range} ${p.basis}.`;
     case "free":
       return "Free: giving it away is always welcome.";
+    case "unrealistic":
+      return `That price isn’t realistic: a ${p.basis.replace(/^typical (price for a |range for )/, "")} sells for about ${range}. Listings with impossible prices aren’t accepted, because they’re usually bait for scams. Enter the real price.`;
     case "high":
       return `That's above the ${range} ${p.basis}. Lower the price, or send it to a moderator if it's worth more (new in box, rare edition…).`;
     case "low":
@@ -164,6 +191,7 @@ export function verifyListing(
 
   if (l.price_cents == null) return { status: "approved", price: null };
   const price = checkPrice({ title: l.title, category: l.category, price_cents: l.price_cents }, comps);
+  if (price.verdict === "unrealistic") return { status: "rejected", reason: priceMessage(price) };
   if (price.verdict === "high" || price.verdict === "low") return { status: "review", price, reason: priceMessage(price) };
   return { status: "approved", price };
 }
